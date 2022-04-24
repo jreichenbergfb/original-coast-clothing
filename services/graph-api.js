@@ -16,10 +16,10 @@ const config = require("./config"),
   { URL, URLSearchParams } = require("url");
 
 module.exports = class GraphApi {
-  static async callSendApi(requestBody) {
+  static async callSendApi(requestBody, pageId) {
     let url = new URL(`${config.apiUrl}/me/messages`);
     url.search = new URLSearchParams({
-      access_token: config.pageAccesToken
+      access_token: config.pageId2AccessToken[pageId]
     });
     let response = await fetch(url, {
       method: "POST",
@@ -101,7 +101,7 @@ module.exports = class GraphApi {
     // You can use the Graph API's /{page-id}/subscribed_apps edge to configure
     // and manage your pages subscriptions
     // https://developers.facebook.com/docs/graph-api/reference/page/subscribed_apps
-    console.log(`Subscribing app ${config.appId} to page ${config.pageId}`);
+    console.log(`Subscribing app ${config.appId} to pages ${config.pageIds}`);
 
     let fields =
       "messages, messaging_postbacks, messaging_optins, " +
@@ -112,23 +112,24 @@ module.exports = class GraphApi {
     }
 
     console.log({ fields });
-
-    let url = new URL(`${config.apiUrl}/${config.pageId}/subscribed_apps`);
-    url.search = new URLSearchParams({
-      access_token: config.pageAccesToken,
-      subscribed_fields: fields
+    config.pageIds.forEach(async id => {
+      let url = new URL(`${config.apiUrl}/${config.pageId2AccessToken[id]}/subscribed_apps`);
+      url.search = new URLSearchParams({
+        access_token: config.pageId2AccessToken[id],
+        subscribed_fields: fields
+      });
+      let response = await fetch(url, {
+        method: "POST"
+      });
+      if (response.ok) {
+        console.log(`Request sent for ${id}`);
+      } else {
+        console.error(
+          `Unable to callSubscribedApps for page ${id}: ${response.statusText}`,
+          await response.json()
+        );
+      }
     });
-    let response = await fetch(url, {
-      method: "POST"
-    });
-    if (response.ok) {
-      console.log(`Request sent.`);
-    } else {
-      console.error(
-        `Unable to callSubscribedApps: ${response.statusText}`,
-        await response.json()
-      );
-    }
   }
 
   static async getUserProfile(senderIgsid) {
@@ -210,7 +211,7 @@ module.exports = class GraphApi {
     // Send the HTTP request to the Built-in NLP Configs API
     // https://developers.facebook.com/docs/graph-api/reference/page/nlp_configs/
 
-    console.log(`Enable Built-in NLP for Page ${config.pageId}`);
+    console.log(`Enable Built-in NLP for Pages ${config.pageIds}`);
 
     let url = new URL(`${config.apiUrl}/me/nlp_configs}/me/nlp_configs`);
     url.search = new URLSearchParams({

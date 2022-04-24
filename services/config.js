@@ -15,7 +15,7 @@ require("dotenv").config();
 
 // Required environment variables
 const ENV_VARS = [
-  "PAGE_ID",
+  "PAGE_IDS",
   "APP_ID",
   "PAGE_ACCESS_TOKEN",
   "APP_SECRET",
@@ -24,17 +24,24 @@ const ENV_VARS = [
   "SHOP_URL"
 ];
 
+const pageId2AccessToken = {};
+const pageIds = process.env.PAGE_IDS.split(',');
+pageIds.forEach((id, idx) => {
+  pageId2AccessToken[id] = process.env[`PAGE_ACCESS_TOKEN_${idx + 1}`];
+});
+
 module.exports = {
   // Messenger Platform API
   apiDomain: "https://graph.facebook.com",
   apiVersion: "v11.0",
 
   // Page and Application information
-  pageId: process.env.PAGE_ID,
+  pageIds: pageIds,
   appId: process.env.APP_ID,
-  pageAccesToken: process.env.PAGE_ACCESS_TOKEN,
   appSecret: process.env.APP_SECRET,
   verifyToken: process.env.VERIFY_TOKEN,
+
+  pageId2AccessToken: pageId2AccessToken,
 
   // URL of your app domain
   appUrl: process.env.APP_URL,

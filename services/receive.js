@@ -28,6 +28,8 @@ module.exports = class Receive {
   // call the appropriate handler function
   handleMessage() {
     let event = this.webhookEvent;
+    console.log('handleMessage', event.message);
+    console.log('handleMessage event', JSON.stringify(event, null, 2));
 
     let responses;
 
@@ -55,14 +57,16 @@ module.exports = class Receive {
       };
     }
 
+    console.log('handleMessage responses', responses);
+
     if (Array.isArray(responses)) {
       let delay = 0;
       for (let response of responses) {
-        this.sendMessage(response, delay * 2000);
+        this.sendMessage(response, pageId, delay * 2000);
         delay++;
       }
     } else {
-      this.sendMessage(responses);
+      this.sendMessage(responses, pageId);
     }
   }
 
@@ -254,7 +258,7 @@ module.exports = class Receive {
     GraphApi.callSendApi(requestBody);
   }
 
-  sendMessage(response, delay = 0) {
+  sendMessage(response, pageId, delay = 0) {
     // Check if there is delay in the response
     if ("delay" in response) {
       delay = response["delay"];
@@ -283,7 +287,9 @@ module.exports = class Receive {
       };
     }
 
-    setTimeout(() => GraphApi.callSendApi(requestBody), delay);
+    console.log('sendMessage', requestBody);
+
+    setTimeout(() => GraphApi.callSendApi(requestBody, pageId), delay);
   }
 
   firstEntity(nlp, name) {

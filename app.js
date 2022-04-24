@@ -51,7 +51,7 @@ app.get("/webhook", (req, res) => {
   let mode = req.query["hub.mode"];
   let token = req.query["hub.verify_token"];
   let challenge = req.query["hub.challenge"];
-
+  console.log('hub.challenge', challenge);
   // Check if a token and mode is in the query string of the request
   if (mode && token) {
     // Check the mode and token sent is correct
@@ -167,7 +167,7 @@ app.get("/profile", (req, res) => {
       if (mode == "profile" || mode == "all") {
         Profile.setThread();
         res.write(
-          `<p>&#9989; Set Messenger Profile of Page ${config.pageId}</p>`
+          `<p>&#9989; Set Messenger Profile of Pages ${config.pageIds}</p>`
         );
       }
       if (mode == "personas" || mode == "all") {
@@ -187,7 +187,7 @@ app.get("/profile", (req, res) => {
       if (mode == "nlp" || mode == "all") {
         GraphApi.callNLPConfigsAPI();
         res.write(
-          `<p>&#9989; Enabled Built-in NLP for Page ${config.pageId}</p>`
+          `<p>&#9989; Enabled Built-in NLP for Pages ${config.pageIds}</p>`
         );
       }
       if (mode == "domains" || mode == "all") {
@@ -251,8 +251,8 @@ var listener = app.listen(config.port, function() {
     );
   }
 
-  if (config.pageId) {
+  if (config.pageIds) {
     console.log("Test your app by messaging:");
-    console.log(`https://m.me/${config.pageId}`);
+    console.log(`https://m.me/${config.pageIds[0]}`);
   }
 });
