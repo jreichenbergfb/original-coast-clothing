@@ -17,7 +17,6 @@ require("dotenv").config();
 const ENV_VARS = [
   "PAGE_IDS",
   "APP_ID",
-  "PAGE_ACCESS_TOKEN",
   "APP_SECRET",
   "VERIFY_TOKEN",
   "APP_URL",
@@ -33,7 +32,7 @@ pageIds.forEach((id, idx) => {
 module.exports = {
   // Messenger Platform API
   apiDomain: "https://graph.facebook.com",
-  apiVersion: "v11.0",
+  apiVersion: "v13.0",
 
   // Page and Application information
   pageIds: pageIds,
@@ -68,19 +67,19 @@ module.exports = {
   get newPersonas() {
     return [
       {
-        name: "Jorge",
+        name: "Reed",
         picture: `${this.appUrl}/personas/sales.jpg`
       },
       {
-        name: "Laura",
+        name: "Val",
         picture: `${this.appUrl}/personas/billing.jpg`
       },
       {
-        name: "Riandy",
+        name: "Alma",
         picture: `${this.appUrl}/personas/order.jpg`
       },
       {
-        name: "Daniel",
+        name: "Alma",
         picture: `${this.appUrl}/personas/care.jpg`
       }
     ];
@@ -91,33 +90,49 @@ module.exports = {
   },
 
   get personaSales() {
-    let id = this.personas["Jorge"] || process.env.PERSONA_SALES;
+    let id = this.personas["Reed"] || process.env.PERSONA_SALES;
     return {
-      name: "Jorge",
+      name: "Reed",
       id: id
     };
   },
 
   get personaBilling() {
-    let id = this.personas["Laura"] || process.env.PERSONA_BILLING;
+    let id = this.personas["Val"] || process.env.PERSONA_BILLING;
     return {
-      name: "Laura",
+      name: "Val",
       id: id
     };
   },
 
   get personaOrder() {
-    let id = this.personas["Riandy"] || process.env.PERSONA_ORDER;
+    let id = this.personas["Reed"] || process.env.PERSONA_ORDER;
     return {
-      name: "Riandy",
+      name: "Reed",
+      id: id
+    };
+  },
+
+  get personaReturns() {
+    let id = this.personas["Reed"] || process.env.PERSONA_RETURNS;
+    return {
+      name: "Reed",
+      id: id
+    };
+  },
+
+  get personaStock() {
+    let id = this.personas["Alma"] || process.env.PERSONA_STOCK;
+    return {
+      name: "Alma",
       id: id
     };
   },
 
   get personaCare() {
-    let id = this.personas["Daniel"] || process.env.PERSONA_CARE;
+    let id = this.personas["Alma"] || process.env.PERSONA_CARE;
     return {
-      name: "Daniel",
+      name: "Alma",
       id: id
     };
   },

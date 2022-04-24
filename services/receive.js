@@ -62,11 +62,11 @@ module.exports = class Receive {
     if (Array.isArray(responses)) {
       let delay = 0;
       for (let response of responses) {
-        this.sendMessage(response, pageId, delay * 2000);
+        this.sendMessage(response, event.recipient.id, delay * 2000);
         delay++;
       }
-    } else {
-      this.sendMessage(responses, pageId);
+    } else if (responses !== null) {
+      this.sendMessage(responses, event.recipient.id);
     }
   }
 
@@ -98,24 +98,16 @@ module.exports = class Receive {
       let care = new Care(this.user, this.webhookEvent);
       response = care.handlePayload("CARE_HELP");
     } else {
-      response = [
-        Response.genText(
-          i18n.__("fallback.any", {
-            message: event.message.text
-          })
-        ),
-        Response.genText(i18n.__("get_started.guidance")),
-        Response.genQuickReply(i18n.__("get_started.help"), [
-          {
-            title: i18n.__("menu.suggestion"),
-            payload: "CURATION"
-          },
-          {
-            title: i18n.__("menu.help"),
-            payload: "CARE_HELP"
-          }
-        ])
-      ];
+      // let care = new Care(this.user, this.webhookEvent);
+      // response = [
+      //   Response.genText(
+      //     i18n.__("fallback.any", {
+      //       message: event.message.text
+      //     })
+      //   ),
+      //   care.handlePayload('CARE_HELP')
+      // ];
+      response = null;
     }
 
     return response;
@@ -205,9 +197,17 @@ module.exports = class Receive {
             title: i18n.__("care.order"),
             payload: "CARE_ORDER"
           },
+          // {
+          //   title: i18n.__("care.billing"),
+          //   payload: "CARE_BILLING"
+          // },
           {
-            title: i18n.__("care.billing"),
-            payload: "CARE_BILLING"
+            title: i18n.__("care.returnPolicy"),
+            payload: "CARE_RETURN_POLICY"
+          },
+          {
+            title: i18n.__("care.stock"),
+            payload: "CARE_STOCK"
           },
           {
             title: i18n.__("care.other"),
@@ -218,7 +218,7 @@ module.exports = class Receive {
     } else if (payload.includes("BOOK_APPOINTMENT")) {
       response = [
         Response.genText(i18n.__("care.appointment")),
-        Response.genText(i18n.__("care.end"))
+        // Response.genText(i18n.__("care.end"))
       ];
     } else {
       response = {
@@ -229,7 +229,7 @@ module.exports = class Receive {
     return response;
   }
 
-  handlePrivateReply(type, object_id) {
+  handlePrivateReply(type, object_id, pageId) {
     let welcomeMessage =
       i18n.__("get_started.welcome") +
       " " +
@@ -255,7 +255,7 @@ module.exports = class Receive {
       message: response
     };
 
-    GraphApi.callSendApi(requestBody);
+    GraphApi.callSendApi(requestBody, pageId);
   }
 
   sendMessage(response, pageId, delay = 0) {
@@ -283,11 +283,12 @@ module.exports = class Receive {
           id: this.user.psid
         },
         message: response,
-        persona_id: persona_id
+        // persona_id: persona_id
       };
+      GraphApi.handoverToInbox(requestBody.recipient, persona_id, pageId);
     }
 
-    console.log('sendMessage', requestBody);
+    console.log('sendMessage', requestBody, 'to page', pageId);
 
     setTimeout(() => GraphApi.callSendApi(requestBody, pageId), delay);
   }

@@ -36,9 +36,17 @@ module.exports = class Care {
               title: i18n.__("care.order"),
               payload: "CARE_ORDER"
             },
+            // {
+            //   title: i18n.__("care.billing"),
+            //   payload: "CARE_BILLING"
+            // },
             {
-              title: i18n.__("care.billing"),
-              payload: "CARE_BILLING"
+              title: i18n.__("care.returnPolicy"),
+              payload: "CARE_RETURN_POLICY"
+            },
+            {
+              title: i18n.__("care.stock"),
+              payload: "CARE_STOCK"
             },
             {
               title: i18n.__("care.other"),
@@ -50,7 +58,7 @@ module.exports = class Care {
       case "CARE_ORDER":
         // Send using the Persona for order issues
 
-        response = [
+        response = //[
           Response.genTextWithPersona(
             i18n.__("care.issue", {
               userFirstName: this.user.firstName,
@@ -58,19 +66,19 @@ module.exports = class Care {
               topic: i18n.__("care.order")
             }),
             config.personaOrder.id
-          ),
-          Response.genTextWithPersona(
-            i18n.__("care.end"),
-            config.personaOrder.id
-          ),
-          Survey.genAgentRating(config.personaOrder.name)
-        ];
+          );//,
+          // Response.genTextWithPersona(
+          //   i18n.__("care.end"),
+          //   config.personaOrder.id
+          // ),
+          // Survey.genAgentRating(config.personaOrder.name)
+        //];
         break;
 
       case "CARE_BILLING":
         // Send using the Persona for billing issues
 
-        response = [
+        response = //[
           Response.genTextWithPersona(
             i18n.__("care.issue", {
               userFirstName: this.user.firstName,
@@ -78,52 +86,82 @@ module.exports = class Care {
               topic: i18n.__("care.billing")
             }),
             config.personaBilling.id
-          ),
-          Response.genTextWithPersona(
-            i18n.__("care.end"),
-            config.personaBilling.id
-          ),
-          Survey.genAgentRating(config.personaBilling.name)
-        ];
+          );//,
+          // Response.genTextWithPersona(
+          //   i18n.__("care.end"),
+          //   config.personaBilling.id
+          // ),
+          // Survey.genAgentRating(config.personaBilling.name)
+        //];
         break;
 
       case "CARE_SALES":
         // Send using the Persona for sales questions
 
-        response = [
+        response = //[
           Response.genTextWithPersona(
             i18n.__("care.style", {
               userFirstName: this.user.firstName,
               agentFirstName: config.personaSales.name
             }),
             config.personaSales.id
-          ),
-          Response.genTextWithPersona(
-            i18n.__("care.end"),
-            config.personaSales.id
-          ),
-          Survey.genAgentRating(config.personaSales.name)
-        ];
+          );//,
+        //   Response.genTextWithPersona(
+        //     i18n.__("care.end"),
+        //     config.personaSales.id
+        //   ),
+        //   Survey.genAgentRating(config.personaSales.name)
+        // ];
         break;
 
       case "CARE_OTHER":
         // Send using the Persona for customer care issues
 
-        response = [
+        response = //[
           Response.genTextWithPersona(
             i18n.__("care.default", {
               userFirstName: this.user.firstName,
               agentFirstName: config.personaCare.name
             }),
             config.personaCare.id
-          ),
-          Response.genTextWithPersona(
-            i18n.__("care.end"),
-            config.personaCare.id
-          ),
-          Survey.genAgentRating(config.personaCare.name)
-        ];
+          );//,
+        //   Response.genTextWithPersona(
+        //     i18n.__("care.end"),
+        //     config.personaCare.id
+        //   ),
+        //   Survey.genAgentRating(config.personaCare.name)
+        // ];
         break;
+
+      case "CARE_RETURN_POLICY":
+        response = Response.genTextWithPersona(
+            i18n.__("care.default", {
+              userFirstName: this.user.firstName,
+              agentFirstName: config.personaReturns.name
+            }),
+            config.personaReturns.id
+          );
+          break;
+
+      case "CARE_STOCK":
+        response = Response.genTextWithPersona(
+            i18n.__("care.default", {
+              userFirstName: this.user.firstName,
+              agentFirstName: config.personaStock.name
+            }),
+            config.personaStock.id
+          );
+          break;
+
+      default:
+        response =
+          Response.genTextWithPersona(
+            i18n.__("care.default", {
+              userFirstName: this.user.firstName,
+              agentFirstName: config.personaCare.name
+            }),
+            config.personaCare.id
+          );
     }
 
     return response;

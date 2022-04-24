@@ -49,11 +49,13 @@
     "prompt": "To connect you with the right team please let me know what this is about?",
     "order": "Order Inquiries",
     "billing": "Billing Issues",
+    "returnPolicy": "Return policy",
+    "stock": "What's in Stock?",
     "other": "Other",
     "appointment": "Thank you for wanting to make an appointment.",
-    "issue": "Hi {{userFirstName}}, my name is {{agentFirstName}}, I'm here to assist you with any questions you might have about your {{topic}}.",
-    "default": "Hi {{userFirstName}}, my name is {{agentFirstName}}, I'm here to assist you today. How can I help you?",
-    "style": "Hi {{userFirstName}}, my name is {{agentFirstName}}, I’m here to answer questions you might have on our summer styles",
+    "issue": "You're now connected with {{agentFirstName}} to assist you with questions you have about {{topic}}.",
+    "default": "You're now connected with {{agentFirstName}} to assist you today. How can we help?",
+    "style": "You're now connected with {{agentFirstName}} to answer questions you might have on our styles",
     "end": "This is as far as the demo goes. Leverage the power of the messenger platform for your business. See https://fb.me/get-sample-oc to learn how to build a similar experience",
     "help": "Help"
   },
@@ -68,7 +70,7 @@
     "prompt": "Thanks for visiting our store, be sure to check out all the great styles we have on the summer section."
   },
   "fallback": {
-    "any": "Sorry, but I don’t recognize \"{{message}}\".",
+    "any": "I see you asked about \"{{message}}\". Please wait for one of our associates to help you.",
     "attachment": "Thanks for sending this attachment, we can connect you to an agent to review it or we can start over"
   }
 }

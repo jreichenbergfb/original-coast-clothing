@@ -89,12 +89,14 @@ app.post("/webhook", (req, res) => {
             case "post":
               return receiveMessage.handlePrivateReply(
                 "post_id",
-                change.post_id
+                change.post_id,
+                entry.id
               );
             case "comment":
               return receiveMessage.handlePrivateReply(
                 "comment_id",
-                change.comment_id
+                change.comment_id,
+                entry.id
               );
             default:
               console.warn("Unsupported feed change type.");
@@ -125,10 +127,10 @@ app.post("/webhook", (req, res) => {
         if (!(senderPsid in users)) {
           // First time seeing this user
           let user = new User(senderPsid);
+          users[senderPsid] = user;
           let userProfile = await GraphApi.getUserProfile(senderPsid);
           if (userProfile) {
             user.setProfile(userProfile);
-            users[senderPsid] = user;
             console.log(`Created new user profile:`);
             console.log({ user });
           }
@@ -171,24 +173,24 @@ app.get("/profile", (req, res) => {
         );
       }
       if (mode == "personas" || mode == "all") {
-        Profile.setPersonas();
-        res.write(`<p>&#9989; Set Personas for ${config.appId}</p>`);
-        res.write(
-          "<p>Note: To persist the personas, add the following variables \
-          to your environment variables:</p>"
-        );
-        res.write("<ul>");
-        res.write(`<li>PERSONA_BILLING = ${config.personaBilling.id}</li>`);
-        res.write(`<li>PERSONA_CARE = ${config.personaCare.id}</li>`);
-        res.write(`<li>PERSONA_ORDER = ${config.personaOrder.id}</li>`);
-        res.write(`<li>PERSONA_SALES = ${config.personaSales.id}</li>`);
-        res.write("</ul>");
+        // Profile.setPersonas();
+        // res.write(`<p>&#9989; Set Personas for ${config.appId}</p>`);
+        // res.write(
+        //   "<p>Note: To persist the personas, add the following variables \
+        //   to your environment variables:</p>"
+        // );
+        // res.write("<ul>");
+        // res.write(`<li>PERSONA_BILLING = ${config.personaBilling.id}</li>`);
+        // res.write(`<li>PERSONA_CARE = ${config.personaCare.id}</li>`);
+        // res.write(`<li>PERSONA_ORDER = ${config.personaOrder.id}</li>`);
+        // res.write(`<li>PERSONA_SALES = ${config.personaSales.id}</li>`);
+        // res.write("</ul>");
       }
       if (mode == "nlp" || mode == "all") {
-        GraphApi.callNLPConfigsAPI();
-        res.write(
-          `<p>&#9989; Enabled Built-in NLP for Pages ${config.pageIds}</p>`
-        );
+        // GraphApi.callNLPConfigsAPI();
+        // res.write(
+        //   `<p>&#9989; Enabled Built-in NLP for Pages ${config.pageIds}</p>`
+        // );
       }
       if (mode == "domains" || mode == "all") {
         Profile.setWhitelistedDomains();
@@ -233,6 +235,21 @@ function verifyRequestSignature(req, res, buf) {
 // Check if all environment variables are set
 config.checkEnvVariables();
 
+config.pushPersona({
+  name: 'Alma',
+  id: 3
+});
+
+config.pushPersona({
+  name: 'Reed',
+  id: 2
+});
+
+config.pushPersona({
+  name: 'Val',
+  id: 1
+});
+
 // Listen for requests :)
 var listener = app.listen(config.port, function() {
   console.log(`The app is listening on port ${listener.address().port}`);
@@ -252,7 +269,9 @@ var listener = app.listen(config.port, function() {
   }
 
   if (config.pageIds) {
-    console.log("Test your app by messaging:");
-    console.log(`https://m.me/${config.pageIds[0]}`);
+    console.log("Test your app by messaging one of the connected pages:");
+    config.pageIds.forEach(id => {
+      console.log(`https://m.me/${id}`);
+    });
   }
 });

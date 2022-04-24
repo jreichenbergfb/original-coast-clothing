@@ -27,7 +27,7 @@ module.exports = class GraphApi {
       body: JSON.stringify(requestBody)
     });
     if (!response.ok) {
-      console.warn(`Could not sent message.`, response.statusText);
+      console.warn(`Could not send message.`, response);
     }
   }
 
@@ -35,23 +35,25 @@ module.exports = class GraphApi {
     // Send the HTTP request to the Messenger Profile API
 
     console.log(`Setting Messenger Profile for app ${config.appId}`);
-    let url = new URL(`${config.apiUrl}/me/messenger_profile`);
-    url.search = new URLSearchParams({
-      access_token: config.pageAccesToken
+    config.pageIds.forEach(async id => {
+      let url = new URL(`${config.apiUrl}/me/messenger_profile`);
+      url.search = new URLSearchParams({
+        access_token: config.pageId2AccessToken[id]
+      });
+      let response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      });
+      if (response.ok) {
+        console.log(`Request sent.`);
+      } else {
+        console.warn(
+          `Unable to callMessengerProfileAPI: ${response.statusText}`,
+          await response.json()
+        );
+      }
     });
-    let response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody)
-    });
-    if (response.ok) {
-      console.log(`Request sent.`);
-    } else {
-      console.warn(
-        `Unable to callMessengerProfileAPI: ${response.statusText}`,
-        await response.json()
-      );
-    }
   }
 
   static async callSubscriptionsAPI(customFields) {
@@ -111,13 +113,13 @@ module.exports = class GraphApi {
       fields = fields + ", " + customFields;
     }
 
-    console.log({ fields });
     config.pageIds.forEach(async id => {
-      let url = new URL(`${config.apiUrl}/${config.pageId2AccessToken[id]}/subscribed_apps`);
+      let url = new URL(`${config.apiUrl}/${id}/subscribed_apps`);
       url.search = new URLSearchParams({
         access_token: config.pageId2AccessToken[id],
         subscribed_fields: fields
       });
+      console.log('Subscribing to fields', { fields });
       let response = await fetch(url, {
         method: "POST"
       });
@@ -161,22 +163,25 @@ module.exports = class GraphApi {
   static async getPersonaAPI() {
     // Send the POST request to the Personas API
     console.log(`Fetching personas for app ${config.appId}`);
-
-    let url = new URL(`${config.apiUrl}/me/personas`);
-    url.search = new URLSearchParams({
-      access_token: config.pageAccesToken
-    });
-    let response = await fetch(url);
-    if (response.ok) {
-      let body = await response.json();
-      return body.data;
-    } else {
-      console.warn(
-        `Unable to fetch personas for ${config.appId}: ${response.statusText}`,
-        await response.json()
-      );
-      return null;
+    const personaResults = [];
+    for (let i=0; i=config.pageIds.length; i++) {
+      let url = new URL(`${config.apiUrl}/me/personas`);
+      url.search = new URLSearchParams({
+        access_token: config.pageId2AccessToken[config.pageIds[i]]
+      });
+      let response = await fetch(url);
+      if (response.ok) {
+        let body = await response.json();
+        personaResults.push(body.data);
+      } else {
+        console.warn(
+          `Unable to fetch personas for ${config.appId}: ${response.statusText}`,
+          await response.json()
+        );
+        personaResults.push(null);
+      }
     }
+    return personaResults;
   }
 
   static async postPersonaAPI(name, profile_picture_url) {
@@ -207,24 +212,65 @@ module.exports = class GraphApi {
     }
   }
 
-  static async callNLPConfigsAPI() {
-    // Send the HTTP request to the Built-in NLP Configs API
-    // https://developers.facebook.com/docs/graph-api/reference/page/nlp_configs/
+  // static async callNLPConfigsAPI() {
+  //   // Send the HTTP request to the Built-in NLP Configs API
+  //   // https://developers.facebook.com/docs/graph-api/reference/page/nlp_configs/
 
-    console.log(`Enable Built-in NLP for Pages ${config.pageIds}`);
+  //   console.log(`Enable Built-in NLP for Pages ${config.pageIds}`);
 
-    let url = new URL(`${config.apiUrl}/me/nlp_configs}/me/nlp_configs`);
+  //   let url = new URL(`${config.apiUrl}/me/nlp_configs}/me/nlp_configs`);
+  //   url.search = new URLSearchParams({
+  //     access_token: config.pageAccesToken,
+  //     nlp_enabled: true
+  //   });
+  //   let response = await fetch(url, {
+  //     method: "POST"
+  //   });
+  //   if (response.ok) {
+  //     console.log(`Request sent.`);
+  //   } else {
+  //     console.error(`Unable to activate built-in NLP: ${response.statusText}`);
+  //   }
+  // }
+
+  static async handoverToInbox(recipient, persona_id, pageId) {
+    let url = new URL(`${config.apiUrl}/me/pass_thread_control`);
     url.search = new URLSearchParams({
-      access_token: config.pageAccesToken,
-      nlp_enabled: true
+      access_token: config.pageId2AccessToken[pageId]
     });
+    const requestBody = {
+      recipient: recipient,
+      target_app_id: 263902037430900,
+      metadata: 'This thread passed to a live agent from the bot',
+    };
     let response = await fetch(url, {
-      method: "POST"
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
     });
     if (response.ok) {
-      console.log(`Request sent.`);
+      console.log(`Success: pass_thread_control for pageId ${pageId}, persona_id ${persona_id}`, response.statusText, await response.json());
     } else {
-      console.error(`Unable to activate built-in NLP: ${response.statusText}`);
+      console.warn(
+        `Unable to pass_thread_control for pageId ${pageId}: ${response.statusText}`,
+        await response.json()
+      );
+    }
+
+    // for debugging, list the secondary receivers
+    const secondaryReceiversUrl = new URL(`${config.apiUrl}/me/secondary_receivers`);
+    secondaryReceiversUrl.search = new URLSearchParams({
+      access_token: config.pageId2AccessToken[pageId],
+      fields: 'id,name'
+    });
+    let secondaryReceiversListResponse = await fetch(secondaryReceiversUrl);
+    if (secondaryReceiversListResponse.ok) {
+      console.log(`Success: secondary_receivers ${secondaryReceiversListResponse.statusText}`, await secondaryReceiversListResponse.json());
+    } else {
+      console.warn(
+        `Unable to list secondary_receivers for pageId ${pageId}: ${secondaryReceiversListResponse.statusText}`,
+        await secondaryReceiversListResponse.json()
+      );
     }
   }
 };

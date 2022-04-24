@@ -22,7 +22,7 @@ module.exports = class User {
   setProfile(profile) {
     this.firstName = profile.firstName;
     this.lastName = profile.lastName;
-    this.locale = profile.locale || "";
+    this.locale = profile.locale || "en_US";
     this.timezone = profile.timezone || "";
     this.gender = profile.gender || "";
   }
